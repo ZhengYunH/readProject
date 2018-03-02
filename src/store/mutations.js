@@ -1,12 +1,14 @@
 import * as types from './mutation-types'
+import api from '../fetch/api.js'
 
 export default {
-  [types.LOGIN] (state, {user}) {
-    localStorage.setItem('user', JSON.stringify(user))
+  [types.LOGIN] (state, user) {
     state.user = user
   },
   [types.LOGOUT] (state) {
     state.user = null
-    localStorage.removeItem('user')
   },
+  [types.CHANGE_TEXT](state,textTitle){
+  	state.textTitle = textTitle;
+  }
 }

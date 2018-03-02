@@ -1,6 +1,9 @@
 <template>
   <el-container class="wrapper">
-    <el-header>Header</el-header>
+    <el-header>
+      Header
+      <a @click="logout">注销</a>
+    </el-header>
   	<el-container>
 	    <el-aside width="200px">
         <el-menu>
@@ -28,7 +31,24 @@ export default {
   components:{
     'textPage': TextPage,
     'TextChoose': TextChoose,
-  }
+  },
+  methods:{
+    logout:function(){
+      this.$store.dispatch('logout');
+      this.$router.push('/login');
+    },
+    checkLogin:function(){
+      if(!this.$store.getters.user){
+        this.$router.push('/login');
+      }
+    }
+  },
+  created() {
+    this.checkLogin();
+  },
+  watch:{
+    "$route" : 'checkLogin'
+  },
 }
 </script>
 

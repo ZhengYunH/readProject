@@ -1,2 +1,2 @@
 export const user = state => state.user;
-export const userID = state => state.userID;
+export const textTitle = state => state.textTitle;

@@ -2,12 +2,12 @@
 <el-row>
   <el-col :span="4" v-for="(o, index) in imgGroup" :key="o.title" :offset="1">
     <el-card :body-style="{ padding: '0px' }">
-      <router-link to="/text-page">
+      <a @click="routerToTextPage">
         <img :src=o.pic class="image">
         <div style="padding: 14px;text-align: center;">
           <span class="textTitle">{{ o.title }}</span>
         </div>
-      </router-link>
+      </a>
     </el-card>
   </el-col>
 </el-row>
@@ -25,6 +25,12 @@ export default {
   },
   
   methods:{
+    routerToTextPage:function(){
+      this.$store.dispatch('changeText','123');
+      //console.log(this.$store.getters.textTitle);
+      this.$router.push('/text-page');
+    },
+
     getImage:function(){
       let params = {
         userID : this.$store.getters.userID,
@@ -34,6 +40,7 @@ export default {
       axios.get('textChoose.php', { params })
         .then(function (response) {
           _this.imgGroup = response.data;
+          _this.$message('成功导入图片');
         })
         .catch(function (error) {
           console.log(error);
@@ -49,8 +56,13 @@ export default {
 </script>
 
 <style>
+  a {
+    cursor: pointer;
+  }
+
   .image {
     width: 100%;
     display: block;
   }
+
 </style>

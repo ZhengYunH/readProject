@@ -2,12 +2,12 @@
 <el-row>
   <el-col :span="4" v-for="(o, index) in imgGroup" :key="o.title" :offset="1">
     <el-card :body-style="{ padding: '0px' }">
-      <a @click="routerToTextPage">
+      
         <img :src=o.pic class="image">
         <div style="padding: 14px;text-align: center;">
-          <span class="textTitle">{{ o.title }}</span>
+          <span class="textTitle"><a @click="routerToTextPage" >{{ o.title }}</a></span>
         </div>
-      </a>
+ 
     </el-card>
   </el-col>
 </el-row>
@@ -25,9 +25,9 @@ export default {
   },
   
   methods:{
-    routerToTextPage:function(){
-      this.$store.dispatch('changeText','123');
-      //console.log(this.$store.getters.textTitle);
+    routerToTextPage:function(event){
+      var textTitle = event.srcElement.innerText;
+      this.$store.dispatch('changeText',textTitle);
       this.$router.push('/text-page');
     },
 

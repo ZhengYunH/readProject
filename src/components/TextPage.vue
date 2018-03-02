@@ -76,16 +76,19 @@ export default{
 			var _this = this;
 			axios.get('textPage.php', { params })
 				.then(function (response) {
+						console.log(response.data);
 	          _this.info = response.data;
 	          _this.$message('成功导入');
 	        })
 	        .catch(function (error) {
+	        	_this.$message('导入失败');
 	          console.log(error);
 	        });
 		},
 
 		playRecord:function(){
 			var x = document.getElementById("RecordAudio");
+			var _this = this;
 			this.audio_visible = true;
 			if(this.state){
 				this.state = false;
@@ -94,7 +97,6 @@ export default{
 			else{
 				this.state = true;
 				x.play();
-				let _this = this;
 				setInterval(function(){
 					_this.setActiveItem(_this.picIndex);
 					_this.picIndex = (_this.picIndex < _this.info.text.length) ? (_this.picIndex+1) : 1 ;
@@ -185,7 +187,7 @@ export default{
 	},
 
 	mounted:function(){
-    //this.getInfo();
+    this.getInfo();
 		this.initRecorder();
     this.audio_visible = false;
   },
@@ -208,13 +210,5 @@ export default{
   .el-carousel__item {
   	text-align: center;
     margin: 0;
-  }
-  
-  .el-carousel__item:nth-child(2n) {
-    background-color: #99a9bf;
-  }
-  
-  .el-carousel__item:nth-child(2n+1) {
-    background-color: #d3dce6;
   }
 </style>

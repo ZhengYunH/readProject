@@ -11,7 +11,7 @@
             <router-link to="/text-choose">选择课文</router-link>
           </el-menu-item>
           <el-menu-item index="2">
-            <router-link to="/text-choose">个人录音</router-link>
+            <router-link to="/personal-recording">个人录音</router-link>
           </el-menu-item>
         </el-menu>
       </el-aside>
@@ -25,12 +25,16 @@
 <script>
 import TextPage from './components/TextPage.vue'
 import TextChoose from './components/TextChoose.vue'
+import PersonalRecording from './components/PersonalRecording.vue'
+import PersonalRecordingPage from './components/PersonalRecordingPage.vue'
 
 export default {
   name: 'App',
   components:{
     'textPage': TextPage,
-    'TextChoose': TextChoose,
+    'textChoose': TextChoose,
+    'personalRecording': PersonalRecording,
+    'personalRecordingPage': PersonalRecordingPage
   },
   methods:{
     logout:function(){
@@ -39,12 +43,13 @@ export default {
     },
     checkLogin:function(){
       if(!this.$store.getters.user){
+        this.$message('请先登录');
         this.$router.push('/login');
       }
     }
   },
   created() {
-    this.checkLogin();
+    //this.checkLogin();
   },
   watch:{
     "$route" : 'checkLogin'

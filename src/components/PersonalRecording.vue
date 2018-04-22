@@ -33,14 +33,14 @@ export default {
 
     getImage:function(){
       let params = {
-        userID : this.$store.getters.userID,
+        user: this.$store.getters.user,
         page: 1
       };
       var _this = this;
       axios.get('personalRecording.php', { params })
         .then(function (response) {
           _this.imgGroup = response.data;
-          _this.$message('成功导入图片');
+          //_this.$message('成功导入图片');
         })
         .catch(function (error) {
           console.log(error);

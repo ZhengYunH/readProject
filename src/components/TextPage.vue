@@ -6,7 +6,7 @@
 	    </el-carousel-item>
 	  </el-carousel>
 	  <div class="audioWarpper">
-	  	<audio id="RecordAudio" :controls="audio_visible" :src=info.record>
+	  	<audio id="RecordAudio" :src=info.record> <!--control for visible-->
 		  	您的浏览器不支持audio标签，请更换最新或其他浏览器。
 		  </audio><br>
 	  </div>
@@ -32,8 +32,8 @@ import $ from 'jquery'
 export default{
 	data:function(){
 		return {
-			info:{text:[{pic:"https://gss2.bdstatic.com/-fo3dSag_xI4khGkpoWK1HF6hhy/baike/c0%3Dbaike60%2C5%2C5%2C60%2C20/sign=3d317346a18b87d6444fa34d6661435d/7aec54e736d12f2e37156f174fc2d562853568b1.jpg",time:1000},
-			{pic:"https://gss2.bdstatic.com/-fo3dSag_xI4khGkpoWK1HF6hhy/baike/c0%3Dbaike60%2C5%2C5%2C60%2C20/sign=3d317346a18b87d6444fa34d6661435d/7aec54e736d12f2e37156f174fc2d562853568b1.jpg",time:2000}],record:""},
+			info://{},
+			{text:[{pic:"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1523340370642&di=4d55a4cfb16abd3b0e49caba2a5a98d0&imgtype=0&src=http%3A%2F%2Fimg.taopic.com%2Fuploads%2Fallimg%2F120727%2F201995-120HG1030762.jpg",time:3000},{pic:"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1523340494203&di=cbf0c718cea6ee490b4db8d193ab99d3&imgtype=0&src=http%3A%2F%2Fimg.zcool.cn%2Fcommunity%2F018d4e554967920000019ae9df1533.jpg%40900w_1l_2o_100sh.jpg",time:2000}],record:"http://mp3.henduoge.com/mp3/2018-04-09/1523241887.mp3"},
 			picIndex:1,
 			audio_visible:false,
 			audio_replay_visible:false,
@@ -42,6 +42,8 @@ export default{
 			recordState:false,
 			recorder:null,
 			blob:null,
+			playControl:null,
+			timeCount:0
 		};
 	},
 
@@ -62,9 +64,8 @@ export default{
 
 	methods:{
 		setActiveItem(index){
-			this.$refs.carousel.setActiveItem(index);
+			this.$refs.carousel.setActiveItem(index-1);
 		},
-
 
 		carouselChange:function(indexNow,indexLast){
 			this.index = indexNow;
@@ -72,7 +73,7 @@ export default{
 
 		getInfo:function(){
 			let params = {
-				user_id : 1,
+				user : this.$store.getters.user,
 				title : this.$store.getters.textTitle
 			};
 			var _this = this;
@@ -80,7 +81,7 @@ export default{
 				.then(function (response) {
 						console.log(response.data);
 	          _this.info = response.data;
-	          _this.$message('成功导入');
+	          //_this.$message('成功导入');
 	        })
 	        .catch(function (error) {
 	        	_this.$message('导入失败');
@@ -89,25 +90,84 @@ export default{
 		},
 
 		playRecord:function(){
-			var x = document.getElementById("RecordAudio");
 			var _this = this;
+			var x = document.getElementById("RecordAudio");
 			this.audio_visible = true;
 			if(this.state){
-				this.state = false;
-				x.pause();
+				this.Pause();
 			}
 			else{
 				this.state = true;
 				x.play();
-				setInterval(function(){
-					_this.setActiveItem(_this.picIndex);
-					_this.picIndex = (_this.picIndex < _this.info.text.length) ? (_this.picIndex+1) : 1 ;
-				},_this.info.text[_this.picIndex].time);
+				this.picTran();
 			}
 		},
 
-		Pause:function(){
+		//图片切换
+		picTran:function(){
+				let timeTemp = this.timeCount*1000;
+				let sum = 0;
+				var i = 1;
+				//计算出当前图片的值
+				for ( i = 0; i < this.info.text.length; i++) {
+					sum = sum +  this.info.text[i].time;
+					if(timeTemp < sum){
+						break;
+					}
+				}
+
+				if(i === this.info.text.length){	//播放完毕
+					//console.log('end',sum,timeTemp);
+					this.setActiveItem(1);
+					var x = document.getElementById("RecordAudio");
+					x.currentTime = 0;
+					this.picIndex = 1;
+					this.Pause();
+				}
+				
+
+				let delta = sum - timeTemp;			
+
+				//console.log("delta:",delta,this.info.text.length,this.timeCount);		
+
+				var _this = this;
+
+				this.playControl = setTimeout(this.picTranFun,delta);
+		},
+
+		//在picTran中用于图片播放的递归调用
+		picTranFun:function(){
+			var _this = this;
+			this.picIndex = this.picIndex+1;
+
+			if(_this.picIndex > _this.info.text.length){
+				if(this.recordState){
+					this.Pause();
+				}
+				else{
+					this.setActiveItem(1);
+					var x = document.getElementById("RecordAudio");
+					x.currentTime = 0;
+					this.picIndex = 1;
+					this.Pause();				
+				}
+			}
+			else{
+				this.setActiveItem(this.picIndex);
+				setTimeout(_this.picTranFun,_this.info.text[_this.picIndex-1].time);
+			}
 			
+		},
+
+		Pause:function(){
+			if(this.playControl){
+				clearInterval(this.playControl);
+				this.playControl = null;
+			}
+			this.state = false;
+			var x = document.getElementById("RecordAudio");
+			x.pause();
+			this.timeCount = x.currentTime;	//获得当前播放时间，用于下面的图片轮播
 		},
 
 		Record:function(){
@@ -117,7 +177,12 @@ export default{
 			var x = document.getElementById("RecordAudio");
 			x.pause();
 
+			this.picIndex = 1;
+			this.setActiveItem(1);
+			this.Pause();
+
 			if(this.recordState == false){
+				this.playControl = setTimeout(this.picTranFun,this.info.text[0].time);
 				this.recordState = true;
 				this.recorder.record();
 			}
@@ -149,7 +214,12 @@ export default{
 	            processData: false,
 	            contentType: false
 	        }).done(function(data) {
-	            //console.log(data);
+	        	if(data.success == true){
+	            _this.$message('上传成功');
+	        	}
+	        	else{
+	        		_this.$message(data.message);
+	        	}
 	        });
 	    };      
 	    reader.readAsDataURL(blob);
@@ -186,6 +256,10 @@ export default{
 		this.initRecorder();
     this.audio_visible = false;
   },
+
+  beforeDestroy:function(){
+  	this.Pause();
+  }
 }
 </script>
 

@@ -8,6 +8,9 @@ import textChoose from '../components/TextChoose.vue'
 import textPage from '../components/TextPage.vue'
 import personalRecording from '../components/PersonalRecording.vue'
 import personalRecordingPage from '../components/PersonalRecordingPage.vue'
+import uploadText from '../components/UploadText.vue'
+import introduce from '../components/Introduce.vue'
+import studentManage from '../components/StudentManage.vue'
 
 export default new Router({
   routes: [
@@ -41,5 +44,20 @@ export default new Router({
       name:'personalRecordingPage',
       component: personalRecordingPage
     },
+    {
+      path:'/upload-text',
+      name:'uploadText',
+      component: uploadText
+    },
+    {
+      path:'/introduce',
+      name:'introduce',
+      component: introduce
+    },
+    {
+      path:'/student-manage',
+      name:'studentManage',
+      component:studentManage
+    }
   ]
 })

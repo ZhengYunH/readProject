@@ -49,12 +49,11 @@
 
             axios.get('login.php', { params })
               .then(function (response) {
-                //console.log(response);
+
                 if(response.data.success == true ){
-                  _this.$message('success');
                   let userName = _this.user.username;
-                  _this.$store.commit(types.LOGIN, {userName})
-                  _this.$router.push({ path: '/text-choose' })
+                  _this.$store.commit(types.LOGIN, userName)
+                  _this.$router.push({ path: '/introduce' })
                   _this.logining = false;
                 }
                 else{

@@ -6,7 +6,7 @@
 	    </el-carousel-item>
 	  </el-carousel>
 	  <div class="audioWarpper">
-	  	<audio id="RecordAudio" :controls="state" :src=info.record>
+	  	<audio id="RecordAudio" :src=info.record>
 		  	您的浏览器不支持audio标签，请更换最新或其他浏览器。
 		  </audio><br>
 	  </div>
@@ -18,8 +18,6 @@
 
 <script>
 import axios from 'axios'
-import Recorder from '../recorder.js'
-import $ from 'jquery'
 
 export default{
 	data:function(){
@@ -27,7 +25,9 @@ export default{
 			info:{},
 			picIndex:1,
 			playRecordDisable:false,
-			state:false
+			state:false,
+			playControl:null,
+			timeCount:0
 		};
 	},
 
@@ -36,27 +36,88 @@ export default{
 			if(this.state ){
 				return "暂停播放";
 			}
-			return "播放原文";
+			return "播放录音";
 		},
 	},
 
 	methods:{
+		setActiveItem(index){
+			this.$refs.carousel.setActiveItem(index-1);
+		},
 		playRecord:function(){
-			var x = document.getElementById("RecordAudio");
 			var _this = this;
+			var x = document.getElementById("RecordAudio");
 			this.audio_visible = true;
 			if(this.state){
-				this.state = false;
-				x.pause();
+				this.Pause();
 			}
 			else{
 				this.state = true;
 				x.play();
-				setInterval(function(){
-					_this.setActiveItem(_this.picIndex);
-					_this.picIndex = (_this.picIndex < _this.info.text.length) ? (_this.picIndex+1) : 1 ;
-				},_this.info.text[_this.picIndex].time);
+				this.picTran();
 			}
+		},
+
+		//图片切换
+		picTran:function(){
+				let timeTemp = this.timeCount*1000;
+				let sum = 0;
+				var i = 1;
+				//计算出当前图片的值
+				for ( i = 0; i < this.info.text.length; i++) {
+					sum = sum +  this.info.text[i].time;
+					if(timeTemp < sum){
+						break;
+					}
+				}
+
+				if(i === this.info.text.length){	//播放完毕
+					//console.log('end',sum,timeTemp);
+					this.setActiveItem(1);
+					var x = document.getElementById("RecordAudio");
+					x.currentTime = 0;
+					this.picIndex = 1;
+					this.Pause();
+				}
+				
+
+				let delta = sum - timeTemp;			
+
+				//console.log("delta:",delta,this.info.text.length,this.timeCount);		
+
+				var _this = this;
+
+				this.playControl = setTimeout(this.picTranFun,delta);
+		},
+
+		//在picTran中用于图片播放的递归调用
+		picTranFun:function(){
+			var _this = this;
+			this.picIndex = this.picIndex+1;
+
+			if(_this.picIndex > _this.info.text.length){
+				this.setActiveItem(1);
+				var x = document.getElementById("RecordAudio");
+				x.currentTime = 0;
+				this.picIndex = 1;
+				this.Pause();
+			}
+			else{
+				this.setActiveItem(this.picIndex);
+				setTimeout(_this.picTranFun,_this.info.text[_this.picIndex-1].time);
+			}
+			
+		},
+
+		Pause:function(){
+			if(this.playControl){
+				clearInterval(this.playControl);
+				this.playControl = null;
+			}
+			this.state = false;
+			var x = document.getElementById("RecordAudio");
+			x.pause();
+			this.timeCount = x.currentTime;	//获得当前播放时间，用于下面的图片轮播
 		},
 
 		carouselChange:function(indexNow,indexLast){
@@ -65,7 +126,7 @@ export default{
 
 		getInfo:function(){
 			let params = {
-				user_id : 1,
+				user : this.$store.getters.user,
 				title : this.$store.getters.textTitle
 			};
 			var _this = this;
@@ -73,7 +134,7 @@ export default{
 				.then(function (response) {
 						console.log(response.data);
 	          _this.info = response.data;
-	          _this.$message('成功导入');
+	          //_this.$message('成功导入');
 	        })
 	        .catch(function (error) {
 	        	_this.$message('导入失败');
@@ -81,7 +142,12 @@ export default{
 	        });
 		},
 
-	}
+	},
+
+	mounted:function(){
+    this.getInfo();
+    this.audio_visible = false;
+  },
 }
 </script>
 

@@ -1,6 +1,7 @@
 <template>
 	<div class="warpper">
-		<el-carousel height="500px" :autoplay=false arrow="never" trigger="click" ref="carousel" indicator-position="none" @change="carouselChange">
+		<div class="br-template"></div>
+		<el-carousel v-loading="loading" height="500px" :autoplay=false arrow="never" trigger="click" ref="carousel" indicator-position="none" @change="carouselChange">
 	    <el-carousel-item v-for="(item,index) in info.text" :key="index">
 	      <img :src=item.pic><br>
 	    </el-carousel-item>
@@ -27,7 +28,8 @@ export default{
 			playRecordDisable:false,
 			state:false,
 			playControl:null,
-			timeCount:0
+			timeCount:0,
+			loading:true
 		};
 	},
 
@@ -132,9 +134,18 @@ export default{
 			var _this = this;
 			axios.get('personalRecordingPage.php', { params })
 				.then(function (response) {
-						console.log(response.data);
+						//console.log(response.data);
 	          _this.info = response.data;
-	          //_this.$message('成功导入');
+	          var audio = document.getElementById("RecordAudio");
+	          audio.addEventListener("canplaythrough",function(){
+				    	_this.loading = false;
+				      _this.playRecordDisable = false;
+						  //_this.$message('成功导入');
+						},false);
+						audio.addEventListener("error",function(){
+						    console.log("加载失败！");
+						},false);
+	          _this.$message('成功导入');
 	        })
 	        .catch(function (error) {
 	        	_this.$message('导入失败');
@@ -148,6 +159,13 @@ export default{
     this.getInfo();
     this.audio_visible = false;
   },
+
+  beforeDestroy:function(){
+  	if(this.playControl){
+				clearInterval(this.playControl);
+				this.playControl = null;
+		}
+  }
 }
 </script>
 

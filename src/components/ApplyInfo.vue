@@ -18,8 +18,8 @@
         sortable>
       </el-table-column>
       <el-table-column
-        prop="password"
-        label="密码">
+        prop="phone"
+        label="电话">
       </el-table-column>
 
       <el-table-column
@@ -31,17 +31,6 @@
 	      </template>
 	    </el-table-column>
     </el-table>
-    <el-form ref="form" :model="form" label-width="80px">
-    	<el-form-item label="名字">
-    		<el-input v-model="form.name"></el-input>
-    	</el-form-item>
-    	<el-form-item label="密码">
-    		<el-input v-model="form.password"></el-input>
-    	</el-form-item>
-    	<el-form-item>
-    		<el-button type="primary" @click="onSubmit">创建学生信息</el-button>
-    	</el-form-item>
-    </el-form>
   </div>
   </template>
 
@@ -52,19 +41,15 @@
     data() {
       return {
         tableData: [],
-        form:{
-        	name:'',
-        	password:'',
-        }
       }
     },
     methods: {
       getInfo() {
         let params = {};
 				var _this = this;
-				axios.get('studentInfo.php', { params })
+				axios.get('ApplyInfo.php', { params })
 					.then(function (response) {
-							//console.log(response.data);
+							console.log(response.data);
 		          _this.tableData = response.data;
 		          //_this.$message('成功导入');
 		        })
@@ -73,35 +58,12 @@
 		        });
       },
 
-      onSubmit(){
-      	let params = {
-					name : this.form.name,
-					password : this.form.password
-				};
-				var _this = this;
-				axios.get('addStudentInfo.php', { params })
-					.then(function (response) {
-              if(response.data.success){
-                _this.$message('成功导入信息');
-                _this.getInfo();
-                _this.form.name = '';
-                _this.form.password = '';
-              }
-              else{
-                _this.$message(response.data.message);
-              }
-		        })
-		        .catch(function (error) {
-		        	_this.$message(error);
-		        });
-      },
-
       deleteData(row){
         let params = {
           name : row.name
         };
         var _this = this;
-        axios.get('deleteStudentInfo.php', { params })
+        axios.get('deleteApplyInfo.php', { params })
           .then(function (response) {
               if(response.data.success){
                 _this.$message('成功删除');

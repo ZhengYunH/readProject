@@ -1,5 +1,6 @@
 <template>
 	<div>
+    <div class="br-template"></div>
 		<el-card class="box-card">
 		  <div slot="header" class="clearfix">
 		    <span>简介</span>

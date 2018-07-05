@@ -1,6 +1,7 @@
 <template>
 	<div class="warpper">
-		<el-carousel height="500px" :autoplay=false arrow="never" trigger="click" ref="carousel" indicator-position="none" @change="carouselChange">
+		<div class="br-template"></div>
+		<el-carousel v-loading="loading" height="500px" :autoplay=false arrow="never" trigger="click" ref="carousel" indicator-position="none" @change="carouselChange">
 	    <el-carousel-item v-for="(item,index) in info.text" :key="index">
 	      <img :src=item.pic><br>
 	    </el-carousel-item>
@@ -12,7 +13,7 @@
 	  </div>
 	  <div class="buttonGroup">
 	  	<el-button type="primary" @click="playRecord" :disabled="playRecordDisable">{{ stateText }}</el-button>
-	  	<el-button type="danger" @click="Record">{{ recordStateText }}</el-button>
+	  	<el-button type="danger" @click="Record" :disabled="RecordDisable">{{ recordStateText }}</el-button>
 	  	<el-button class="uploadButton" type="primary" v-show = "audio_replay_visible" @click="upload">上传<i class="el-icon-upload el-icon--right"></i></el-button>
 	  </div>
 
@@ -32,18 +33,19 @@ import $ from 'jquery'
 export default{
 	data:function(){
 		return {
-			info://{},
-			{text:[{pic:"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1523340370642&di=4d55a4cfb16abd3b0e49caba2a5a98d0&imgtype=0&src=http%3A%2F%2Fimg.taopic.com%2Fuploads%2Fallimg%2F120727%2F201995-120HG1030762.jpg",time:3000},{pic:"https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1523340494203&di=cbf0c718cea6ee490b4db8d193ab99d3&imgtype=0&src=http%3A%2F%2Fimg.zcool.cn%2Fcommunity%2F018d4e554967920000019ae9df1533.jpg%40900w_1l_2o_100sh.jpg",time:2000}],record:"http://mp3.henduoge.com/mp3/2018-04-09/1523241887.mp3"},
+			info:{},
 			picIndex:1,
 			audio_visible:false,
 			audio_replay_visible:false,
-			playRecordDisable:false,
+			playRecordDisable:true,
 			state:false,
 			recordState:false,
 			recorder:null,
 			blob:null,
 			playControl:null,
-			timeCount:0
+			timeCount:0,
+			loading:true,
+			RecordDisable:true
 		};
 	},
 
@@ -79,14 +81,24 @@ export default{
 			var _this = this;
 			axios.get('textPage.php', { params })
 				.then(function (response) {
-						console.log(response.data);
+						//console.log(response.data);
 	          _this.info = response.data;
-	          //_this.$message('成功导入');
+	          var audio = document.getElementById("RecordAudio");
+	          audio.addEventListener("canplaythrough",function(){
+				    	_this.loading = false;
+				      _this.playRecordDisable = false;
+				      _this.RecordDisable = false;
+						  //_this.$message('成功导入');
+						},false);
+						audio.addEventListener("error",function(){
+						    console.log("加载失败！");
+						},false);
 	        })
 	        .catch(function (error) {
 	        	_this.$message('导入失败');
 	          console.log(error);
 	        });
+	    
 		},
 
 		playRecord:function(){
@@ -166,7 +178,9 @@ export default{
 			}
 			this.state = false;
 			var x = document.getElementById("RecordAudio");
-			x.pause();
+			if(x){
+				x.pause();
+			}
 			this.timeCount = x.currentTime;	//获得当前播放时间，用于下面的图片轮播
 		},
 
@@ -177,9 +191,10 @@ export default{
 			var x = document.getElementById("RecordAudio");
 			x.pause();
 
+			this.Pause();
 			this.picIndex = 1;
 			this.setActiveItem(1);
-			this.Pause();
+			
 
 			if(this.recordState == false){
 				this.playControl = setTimeout(this.picTranFun,this.info.text[0].time);
@@ -207,6 +222,7 @@ export default{
 	        fd.append('user', _this.$store.getters.user);
 	        fd.append('textTitle', _this.$store.getters.textTitle);
 	        fd.append('data', event.target.result);
+	        //console.log(_this.$store.getters.user,_this.$store.getters.textTitle,fd);
 	        $.ajax({
 	            type: 'POST',
 	            url: uploadUrl,
@@ -214,7 +230,11 @@ export default{
 	            processData: false,
 	            contentType: false
 	        }).done(function(data) {
-	        	if(data.success == true){
+	        	var data2 = JSON.parse(data);
+	        	console.log(data2);
+	        	console.log(typeof data2);
+	        	console.log(data2[0]);
+	        	if(data2.success){
 	            _this.$message('上传成功');
 	        	}
 	        	else{
@@ -258,7 +278,10 @@ export default{
   },
 
   beforeDestroy:function(){
-  	this.Pause();
+  	if(this.playControl){
+				clearInterval(this.playControl);
+				this.playControl = null;
+		}
   }
 }
 </script>

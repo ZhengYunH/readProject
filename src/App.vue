@@ -1,5 +1,5 @@
 <template>
-  <el-container class="wrapper" >
+  <el-container class="app-wrapper" >
     <el-header>
       <el-menu mode="horizontal" :default-active="activeIndex">     
         <el-menu-item index="0">
@@ -22,7 +22,11 @@
           <router-link to="/student-manage" >学员信息管理</router-link>
         </el-menu-item>
 
-        <el-menu-item index="5">
+        <el-menu-item index="5" v-show="isAdmin">
+          <router-link to="/apply-info" >申请信息管理</router-link>
+        </el-menu-item>
+
+        <el-menu-item index="6">
           <a @click="logout">注销</a>
         </el-menu-item>
 
@@ -34,7 +38,7 @@
     </el-header>
   	<el-container>
 	    <el-main>
-         <router-view ></router-view>
+         <router-view></router-view>
       </el-main>
 	  </el-container>
   </el-container>
@@ -48,6 +52,7 @@ import PersonalRecordingPage from './components/PersonalRecordingPage.vue'
 import UploadText from './components/UploadText.vue'
 import Introduce from './components/Introduce.vue'
 import StudentManage from './components/StudentManage.vue'
+import ApplyInfo from './components/ApplyInfo.vue'
 
 export default {
   name: 'App',
@@ -80,7 +85,8 @@ export default {
     'personalRecordingPage': PersonalRecordingPage,
     'uploadText': UploadText,
     'introduce': Introduce,
-    'studentManage': StudentManage 
+    'studentManage': StudentManage ,
+    'apply-info': ApplyInfo
   },
   methods:{
     logout:function(){
@@ -88,8 +94,7 @@ export default {
       this.$router.push('/login');
     },
     checkLogin:function(){
-      if(!this.$store.getters.user){
-        //this.$message('请先登录');
+      if((!this.$store.getters.user) && (this.$route.name!='apply') && (this.$route.name!='introduce')){ 
         this.$router.push('/login');
       }
     }
@@ -116,11 +121,11 @@ export default {
   }
   
   .menu-right{
-    position:absolute;
+    position: absolute;
     right:2%;
   }
 
-	.wrapper {
+	.app-wrapper {
 	  position: absolute;
 	  top: 0px;
 	  bottom: 0px;
@@ -133,12 +138,12 @@ export default {
     line-height: 60px;
   }
   
-  .el-aside {
-    color: #333;
-  }
-
   .router-link-active {
   color: #000;
   font-weight: bold;
-}
+  }
+
+  .el-main{
+    padding-top: 0;
+  }
 </style>
